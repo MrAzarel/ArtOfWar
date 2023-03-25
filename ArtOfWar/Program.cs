@@ -12,7 +12,7 @@ class Program
     static void Main(string[] args)
     {
         Fight fight = new Fight();
-        BestArmy bestArmy = new BestArmy();
+        IBestArmy bestArmy = new BestArmy();
         ICreator creator;
 
         List<Unit> enemyArmy = new List<Unit>();
@@ -25,8 +25,6 @@ class Program
         int armyPoints = Convert.ToInt32(Console.ReadLine());
         int points = armyPoints;
         Console.WriteLine();
-
-        BestArmyTest.CreateArmy(enemyArmy, armyPoints);
 
         //Log.OutArmy(enemyArmy);
 
@@ -46,7 +44,8 @@ class Program
 
             if (userChois == "666")
             {
-                var bestArmyTest = bestArmy.Testing;
+                string test = bestArmy.Testing();
+                Console.WriteLine(test + "\n");
             }
 
             switch (userChois)

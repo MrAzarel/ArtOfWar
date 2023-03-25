@@ -6,20 +6,16 @@ using System.Threading.Tasks;
 
 namespace ArtOfWar
 {
-    internal class BestArmyTest
+    internal class BestArmyTest : IBestArmy
     {
-        public BestArmyTest()
-        {
-            List<Unit> firstArmy = new List<Unit>();
-            List<Unit> secondArmy = new List<Unit>();
 
-            List<Unit> corpesFirstArmy = new List<Unit>();
-            List<Unit> corpesSecondArmy = new List<Unit>();    
+        List<Unit> firstArmy = new List<Unit>();
+        List<Unit> secondArmy = new List<Unit>();
 
-            Testing(firstArmy, secondArmy, corpesFirstArmy, corpesSecondArmy);
-        }
+        List<Unit> corpesFirstArmy = new List<Unit>();
+        List<Unit> corpesSecondArmy = new List<Unit>();
 
-        public static void CreateArmy(List<Unit> army, int fUnitPoints)
+        static void CreateArmy(List<Unit> army, int fUnitPoints)
         {
             int count = army.Count;
             for (int i = 0; i < count; i++)
@@ -74,7 +70,7 @@ namespace ArtOfWar
             }
         }
 
-        public static void Testing(List<Unit> firstArmy, List<Unit> secondArmy, List<Unit> firstArmyCorpse, List<Unit> secondArmyCorpse)
+        public string Testing()
         {
             Fight fight = new Fight();
 
@@ -107,9 +103,9 @@ namespace ArtOfWar
                 CreateArmy(secondArmy, 100);
 
                 for (int k = 0; k < firstArmy.Count; k++)
-                    firstArmyCorpse.Add(firstArmy[k]);
+                    corpesFirstArmy.Add(firstArmy[k]);
                 for (int k = 0; k < secondArmy.Count; k++)
-                    secondArmyCorpse.Add(secondArmy[k]);
+                    corpesSecondArmy.Add(secondArmy[k]);
 
                 Score.AddNew(bestScore, secondArmy);
 
@@ -128,7 +124,7 @@ namespace ArtOfWar
                         else
                             turn = 2;
 
-                        result = fight.GoBattle(firstArmy, secondArmy, turn, firstArmyCorpse, secondArmyCorpse, points);
+                        result = fight.GoBattle(firstArmy, secondArmy, turn, corpesFirstArmy, corpesSecondArmy, points);
 
                         if (result == "WIN")
                             winPoints++;
@@ -207,7 +203,7 @@ namespace ArtOfWar
                         else
                             turn = 2;
 
-                        result = fight.GoBattle(challenger[i], challenger[j], turn, firstArmyCorpse, secondArmyCorpse, points);
+                        result = fight.GoBattle(challenger[i], challenger[j], turn, corpesFirstArmy, corpesSecondArmy, points);
 
                         if (result == "WIN")
                             winPoints++;
@@ -242,6 +238,8 @@ namespace ArtOfWar
                 Log.OutArmy(challenger[i]);
                 Console.WriteLine();
             }
+
+            return "Testing complited successfully";
         }
     }
 }
