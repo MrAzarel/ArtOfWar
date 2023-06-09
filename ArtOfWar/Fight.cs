@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace ArtOfWar
     {
         //private static Fight instance;
         //private static object syncRoot = new Object();
-        
+
         //private Fight() { }
 
         //public static Fight GetInstance
@@ -32,21 +33,19 @@ namespace ArtOfWar
                 return 1;
         }
 
-        static int Hit(Unit firstFighter, Unit secondFighter, int points)
-        {
-            double n = ((points - secondFighter.Deffense) * (double)firstFighter.Attack / 100);
-            n = Math.Ceiling(n);
-            return (int)n;
-        }
+        //static int Hit(Unit firstFighter, Unit secondFighter, int points)
+        //{
+        //    double n = ((points - secondFighter.Deffense) * (double)firstFighter.Attack / 100);
+        //    n = Math.Ceiling(n);
+        //    return (int)n;
+        //}
 
         static string Combat(List<Unit> firstArmy, List<Unit> secondArmy, int points)
         {
-            int hit = Hit(firstArmy[0], secondArmy[0], points);
+            int hit = secondArmy[0].TakeDamage(firstArmy[0], points);
 
             if (hit <= 0)
                 return "drawPoints++";
-            else
-                secondArmy[0].Hp -= hit;
 
             if (secondArmy[0].Hp <= 0)
                 return "turn = 1";
@@ -68,7 +67,7 @@ namespace ArtOfWar
                 else
                     brain = Combat(enemyArmy, playerArmy, points);
 
-                ArchersShooting(playerArmy, enemyArmy);
+                SpecialUnitsCast(playerArmy, enemyArmy);
 
                 if (brain == "turn = 2")
                 {
@@ -85,8 +84,12 @@ namespace ArtOfWar
                     turn = Turn(turn);
                     drawPoints++;
                 }
-
+                
                 ArmysUpdate(playerArmy, enemyArmy);
+                Console.WriteLine("Your Army: ");
+                Log.OutArmy(playerArmy); Console.WriteLine();
+                Console.WriteLine("Enemy Army: ");
+                Log.OutArmy(enemyArmy); Console.WriteLine();
             }
             return EndBattle(playerArmy, corpesPlayerArmy, enemyArmy, corpesEnemyArmy);
         }
@@ -102,7 +105,7 @@ namespace ArtOfWar
                     secondArmy.RemoveAt(0);
         }
 
-        static void ArchersShooting(List<Unit> firstArmy, List<Unit> secondArmy)
+        static void SpecialUnitsCast(List<Unit> firstArmy, List<Unit> secondArmy)
         {
             int count;
 
@@ -115,21 +118,25 @@ namespace ArtOfWar
             {
                 if (firstArmy.Count > i)
                     if (firstArmy[i] is SpecialUnit && (firstArmy[i] as SpecialUnit).SpecialAbilityType == 1)
-                        Shoot((firstArmy[i] as SpecialUnit), secondArmy, i, (firstArmy[i] as SpecialUnit).SpecialAbilityRange);
+                        Shoot((firstArmy[i] as SpecialUnit), secondArmy, i);
                     else if (firstArmy[i] is SpecialUnit && (firstArmy[i] as SpecialUnit).SpecialAbilityType == 2)
-                        Heal((firstArmy[i] as SpecialUnit), firstArmy, i, (firstArmy[i] as SpecialUnit).SpecialAbilityRange);
+                        Heal((firstArmy[i] as SpecialUnit), firstArmy, i);
+                    else if (firstArmy[i] is SpecialUnit && (firstArmy[i] as SpecialUnit).SpecialAbilityType == 3)
+                        Cloning((firstArmy[i] as SpecialUnit), firstArmy, i);
 
                 if (secondArmy.Count > i)
                     if (secondArmy[i] is SpecialUnit && (secondArmy[i] as SpecialUnit).SpecialAbilityType == 1)
-                        Shoot((secondArmy[i] as SpecialUnit), firstArmy, i, (secondArmy[i] as SpecialUnit).SpecialAbilityRange);
+                        Shoot((secondArmy[i] as SpecialUnit), firstArmy, i);
                     else if (secondArmy[i] is SpecialUnit && (secondArmy[i] as SpecialUnit).SpecialAbilityType == 2)
-                        Heal((secondArmy[i] as SpecialUnit), secondArmy, i, (secondArmy[i] as SpecialUnit).SpecialAbilityRange);
+                        Heal((secondArmy[i] as SpecialUnit), secondArmy, i);
+                    else if (secondArmy[i] is SpecialUnit && (secondArmy[i] as SpecialUnit).SpecialAbilityType == 3)
+                        Cloning((secondArmy[i] as SpecialUnit), secondArmy, i);
             }
         }
 
-        static void Shoot(SpecialUnit archer, List<Unit> secondArmy, int archerPosition, int range)
+        static void Shoot(SpecialUnit archer, List<Unit> secondArmy, int archerPosition)
         {
-            int target = range - archerPosition;
+            int target = archer.SpecialAbilityRange - archerPosition;
             if (target < 3)
             {
                 if (secondArmy.Count < target)
@@ -144,12 +151,29 @@ namespace ArtOfWar
             }
         }
 
-        static void Heal(SpecialUnit healer, List<Unit> firstAmy, int healerPosition, int range)
+        static void Heal(SpecialUnit healer, List<Unit> firstAmy, int healerPosition)
         {
-            if (range > healerPosition)
+            if (healer.SpecialAbilityRange > healerPosition)
                 firstAmy[0].Hp += healer.SpecialAbilityStrength;
             if (firstAmy[0].Hp > firstAmy[0].MaxHp)
                 firstAmy[0].Hp = firstAmy[0].MaxHp;
+        }
+
+        static void Cloning(SpecialUnit witcher, List<Unit> firstAmy, int witcherPosition)
+        {
+            for (int i = 0; i < witcherPosition; i++)
+            {
+                if (firstAmy[i] is ICloneable)
+                {
+                    Unit clone = (witcher as Witcher).Clone(firstAmy[i + 1] as ICloneable);
+                    if (clone != null)
+                    {
+                        Unit swoper = firstAmy[i];
+                        firstAmy.Insert(i, clone);
+                        break;
+                    }
+                }
+            }
         }
 
         static void RefrashArmy(List<Unit> army, List<Unit> armyCorpes)
@@ -163,6 +187,13 @@ namespace ArtOfWar
             {
                 armyCorpes[i].Hp = armyCorpes[i].MaxHp;
                 army.Add(armyCorpes[i]);
+            }
+
+            count = armyCorpes.Count;
+
+            for (int i = 0; i < count; i++)
+            {
+                armyCorpes.RemoveAt(0);
             }
         }
 

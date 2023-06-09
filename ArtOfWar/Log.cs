@@ -20,5 +20,69 @@ namespace ArtOfWar
                     Console.WriteLine("Name: {0} Hp: {1} Def: {2}  Att: {3}", item.Name, item.Hp, item.Deffense, item.Attack);
             }
         }
+
+    }
+
+    interface ICommand
+    {
+        void Undo();
+        void Redo();
+    }
+
+    // Receiver - Получатель
+    class Receiver
+    {
+        public void UndoRound()
+        {
+            
+        }
+
+        public void RedoRound()
+        {
+            
+        }
+    }
+
+    class RoundCommand : ICommand
+    {
+        Receiver r;
+        public RoundCommand(Receiver set)
+        {
+            r = set;
+        }
+        public void Redo()
+        {
+            r.RedoRound();
+        }
+        public void Undo()
+        {
+            r.UndoRound();           
+        }
+    }
+
+    // Invoker - инициатор
+    class Invoker
+    {
+        List<Unit> savedPlayer;
+        List<Unit> savedEnemy;
+
+        ICommand command;
+
+        public Invoker() { }
+
+        public void SetCommand(ICommand com)
+        {
+            command = com;
+        }
+
+        public void PressUndo()
+        {
+            command.Undo();
+        }
+
+        public void PressRedo()
+        {
+            command.Redo();
+        }
     }
 }

@@ -5,7 +5,8 @@ using System.Xml.Linq;
 using System.Text.Json;
 using static System.Formats.Asn1.AsnWriter;
 using System.Security.Cryptography;
-using ArtOfWar; 
+using ArtOfWar;
+using System.Xml.Serialization;
 
 class Program
 {
@@ -13,7 +14,9 @@ class Program
     {
         Fight fight = new Fight();
         IBestArmy bestArmy = new BestArmy();
-        ICreator creator;
+
+        Brain simpleUnitCreator = new Brain(new UnitCreator());
+        Brain specialUnitCreator = new Brain(new SpecialUnitCreator());
 
         List<Unit> enemyArmy = new List<Unit>();
         List<Unit> playerArmy = new List<Unit>();
@@ -22,11 +25,27 @@ class Program
         List<Unit> corpesPlayerArmy = new List<Unit>();
 
         Console.WriteLine("Points: ");
-        int armyPoints = Convert.ToInt32(Console.ReadLine());
+        string temp = Console.ReadLine();
+        int armyPoints = 0;
+
+        if (temp == "" || temp.Any(c => char.IsLetter(c)))
+            while (temp == "" || temp.Any(c => char.IsLetter(c)))
+            {
+                temp = Console.ReadLine();
+                if (temp != "" && !temp.Any(c => char.IsLetter(c)))
+                    armyPoints = Convert.ToInt32(temp);
+                else
+                    Console.WriteLine("Колличество очков не указано или указано некоректно!");
+            }
+        else
+            armyPoints = Convert.ToInt32(temp);
+
+
         int points = armyPoints;
         Console.WriteLine();
 
-        //Log.OutArmy(enemyArmy);
+        BestArmyTest.CreateArmy(enemyArmy, armyPoints);
+        //Log.OutArmy(enemyArmy); 
 
         int turn;
         string result;
@@ -34,8 +53,15 @@ class Program
 
         string userChois = "";
 
+        bool someoneCanHaveBuff = false;
+        bool bufferIsHere = false;
+
+        List<int> buff = new List<int>();
+        int bufferPosition = -1;
+
         while (userChois != "7")
         {
+            Console.WriteLine();
             Console.WriteLine("Press 1 to add Simple Unit \nPress 2 to add Special Unit" +
             " \nPress 3 to see your army \nPress 4 to Start fighting \nPress 5 to play Tournament " +
             "\nPress 6 to add your Army in JSON \nPress 7 to exit program");
@@ -51,37 +77,68 @@ class Program
             switch (userChois)
             {
                 case "1":
-                    Console.WriteLine("\n1.Легкий пехотинец \n2.Тяжёлый пехотинец \n3.Рыцарь \n");
+                    Console.WriteLine("\n1.Легкий пехотинец \n2.Тяжёлый пехотинец \n3.Рыцарь \n4.Гуляй город");
                     whatTheUnit = Console.ReadLine();
                     if (whatTheUnit == "1" && armyPoints >= 20)
+                    {
                         armyPoints -= 20;
+                        bufferIsHere = true;
+                        bufferPosition = playerArmy.Count;
+                    }
                     else if (whatTheUnit == "2" && armyPoints >= 30)
+                    {
                         armyPoints -= 30;
-                    else if (whatTheUnit == "3" && armyPoints >= 54)
-                        armyPoints -= 54;
+                        someoneCanHaveBuff = true;
+                        buff.Add(playerArmy.Count);
+                    }
+                    else if (whatTheUnit == "3" && armyPoints >= 55)
+                        armyPoints -= 55;
+                    else if (whatTheUnit == "4" && armyPoints >= 50)
+                        armyPoints -= 50;
                     else
                     {
-                        Console.WriteLine("You have not enough points! \n Points: {0} \n", armyPoints);
+                        Console.WriteLine("You have not enough points or no such unit does not exist! \n Points: {0} \n", armyPoints);
                         break;
                     }
-                    creator = new UnitCreator();
-                    playerArmy.Add(creator.Create(whatTheUnit));
+                    playerArmy.Add(simpleUnitCreator.Create(whatTheUnit));
+                    if (bufferIsHere && someoneCanHaveBuff)
+                    {
+                        string chois;
+                        Console.WriteLine("Вы можете бафнуть тежелого пехотинца!");
+                        Console.WriteLine("1. Бафнуть всех\n2. Бафнуть последнего");
+                        chois = Console.ReadLine();
+                        switch (chois) 
+                        {
+                            case "1": //что-то не так :(
+                                for (int i = 0; i < buff.Count; i++)
+                                    playerArmy[buff[i]] = new HalfBuff(playerArmy[bufferPosition] as LightInfantryman, playerArmy[buff[i]] as HeavyInfantryman);
+                                break;
+                            case "2":
+                                    playerArmy[buff[buff.Count - 1]] = new HalfBuff(playerArmy[bufferPosition], playerArmy[buff[buff.Count - 1]]);
+                                break;
+                            default:
+                                break;
+                        }
+                        someoneCanHaveBuff = false;
+                    }                 
                     break;
 
                 case "2":
-                    Console.WriteLine("\n1.Лучник \n2.Медик");
+                    Console.WriteLine("\n1.Лучник \n2.Медик \n3.Колдун");
                     whatTheUnit = Console.ReadLine();
-                    if (whatTheUnit == "1" && armyPoints >= 36)
-                        armyPoints -= 36;
+                    if (whatTheUnit == "1" && armyPoints >= 35)
+                        armyPoints -= 35;
                     else if (whatTheUnit == "2" && armyPoints >= 30)
+                        armyPoints -= 30;
+                    else if (whatTheUnit == "3" && armyPoints >= 30)
                         armyPoints -= 30;
                     else
                     {
-                        Console.WriteLine("You have not enough points! \n Points: {0} \n", armyPoints);
+                        Console.WriteLine("You have not enough points or no such unit does not exist! \n Points: {0} \n", armyPoints);
                         break;
                     }
-                    creator = new SpecialUnitCreator();
-                    playerArmy.Add(creator.Create(whatTheUnit));
+
+                    playerArmy.Add(specialUnitCreator.Create(whatTheUnit));
                     break;
 
                 case "3":

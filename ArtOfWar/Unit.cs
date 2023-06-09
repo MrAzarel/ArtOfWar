@@ -26,6 +26,14 @@ namespace ArtOfWar
             Attack = attack;
         }
 
+        public virtual int TakeDamage(Unit unit, int points)
+        {
+            double n = ((points - Deffense) * (double)unit.Attack / 100);
+            n = Math.Ceiling(n);
+            Hp -= (int)n;
+            return (int)n;
+        }
+
         public string Name { get; set; }
         public int Hp { get; set; }
         public int Deffense { get; set; }

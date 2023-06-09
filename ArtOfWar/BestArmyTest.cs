@@ -15,7 +15,7 @@ namespace ArtOfWar
         List<Unit> corpesFirstArmy = new List<Unit>();
         List<Unit> corpesSecondArmy = new List<Unit>();
 
-        static void CreateArmy(List<Unit> army, int fUnitPoints)
+        public static void CreateArmy(List<Unit> army, int fUnitPoints)
         {
             int count = army.Count;
             for (int i = 0; i < count; i++)
@@ -27,14 +27,17 @@ namespace ArtOfWar
 
             int fighterCount = rand.Next(1, 11);
 
+            string Name;
+
             int Hp, Deffense, Attack;
 
             for (int i = 0; i < fighterCount; i++)
             {
-
                 Thread.Sleep(10);
                 if (fUnitPoints <= 0)
                     break;
+
+                Name = i.ToString();
 
                 Hp = rand.Next(1, fUnitPoints + 1);
                 fUnitPoints -= Hp;
@@ -60,13 +63,15 @@ namespace ArtOfWar
                     fUnitPoints -= sar * 2;
 
                     if (i == 2)
-                        army.Add(new SpecialUnit(" ", Hp, Deffense, Attack, 1, sas, sar));
+                        army.Add(new SpecialUnit(Name, Hp, Deffense, Attack, 1, sas, sar));
                     else
-                        army.Add(new SpecialUnit(" ", Hp, Deffense, Attack, 2, sas, sar));
+                        army.Add(new SpecialUnit(Name, Hp, Deffense, Attack, 2, sas, sar));
                 }
                 else
-                    army.Add(new Unit(" ", Hp, Deffense, Attack));
-
+                {
+                    Unit unit = new Proxy(new Unit(Name, Hp, Deffense, Attack));
+                    army.Add(unit);
+                }
             }
         }
 
