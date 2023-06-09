@@ -114,7 +114,7 @@ namespace ArtOfWar
             else
                 count = secondArmy.Count;
 
-            for (int i = 0; i < count; i++)
+            for (int i = 1; i < count; i++)
             {
                 if (firstArmy.Count > i)
                     if (firstArmy[i] is SpecialUnit && (firstArmy[i] as SpecialUnit).SpecialAbilityType == 1)
@@ -137,7 +137,7 @@ namespace ArtOfWar
         static void Shoot(SpecialUnit archer, List<Unit> secondArmy, int archerPosition)
         {
             int target = archer.SpecialAbilityRange - archerPosition;
-            if (target < 3)
+            if (target < archer.SpecialAbilityRange)
             {
                 if (secondArmy.Count < target)
                     target = secondArmy.Count;

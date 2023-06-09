@@ -25,13 +25,15 @@ namespace ArtOfWar
 
     interface ICommand
     {
+        void Execute();
         void Undo();
         void Redo();
     }
 
     // Receiver - Получатель
-    class Receiver
+    class Round
     {
+        List<Unit> pla;
         public void UndoRound()
         {
             

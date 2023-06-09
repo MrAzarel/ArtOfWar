@@ -109,9 +109,9 @@ class Program
                         chois = Console.ReadLine();
                         switch (chois) 
                         {
-                            case "1": //что-то не так :(
+                            case "1": 
                                 for (int i = 0; i < buff.Count; i++)
-                                    playerArmy[buff[i]] = new HalfBuff(playerArmy[bufferPosition] as LightInfantryman, playerArmy[buff[i]] as HeavyInfantryman);
+                                    playerArmy[buff[i]] = new HalfBuff(playerArmy[bufferPosition], playerArmy[buff[i]]);
                                 break;
                             case "2":
                                     playerArmy[buff[buff.Count - 1]] = new HalfBuff(playerArmy[bufferPosition], playerArmy[buff[buff.Count - 1]]);
