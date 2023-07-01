@@ -40,7 +40,7 @@ namespace ArtOfWar
         //    return (int)n;
         //}
 
-        static string Combat(List<Unit> firstArmy, List<Unit> secondArmy, int points)
+        public static string Combat(List<Unit> firstArmy, List<Unit> secondArmy, int points)
         {
             int hit = secondArmy[0].TakeDamage(firstArmy[0], points);
 
@@ -55,41 +55,86 @@ namespace ArtOfWar
 
         public string GoBattle(List<Unit> playerArmy, List<Unit> enemyArmy, int turn, List<Unit> corpesPlayerArmy, List<Unit> corpesEnemyArmy, int points)
         {
-            string brain;
+            int turnSave = turn;
+
+            string brain = "";
             int drawPoints = 0;
+
+            Invoker invoker = new Invoker();
+            Receiver receiver = new Receiver(playerArmy, enemyArmy);
+            receiver.points = points;
+
+            string battleOption;
+            Console.WriteLine("Играть без остановок?\n1. Да\n2. Нет");
+            battleOption = Console.ReadLine();
+            if (battleOption == "1")
+                battleOption = "4";
 
             while (playerArmy.Count != 0 && enemyArmy.Count != 0 && drawPoints < 2)
             {
-                int playerUnitHp = playerArmy[0].Hp;
-                int enemyUnitHp = enemyArmy[0].Hp;
-                if (turn == 1)
-                    brain = Combat(playerArmy, enemyArmy, points);
-                else
-                    brain = Combat(enemyArmy, playerArmy, points);
-
-                SpecialUnitsCast(playerArmy, enemyArmy);
-
-                if (brain == "turn = 2")
+                if (battleOption != "5")
                 {
-                    if (playerArmy[0].Hp < playerUnitHp || enemyArmy[0].Hp < enemyUnitHp)
+                    receiver.Save(playerArmy, enemyArmy);
+                    int playerUnitHp = playerArmy[0].Hp;
+                    int enemyUnitHp = enemyArmy[0].Hp;
+                    if (turn == 1)
+                        brain = Combat(playerArmy, enemyArmy, points);
+                    else
+                        brain = Combat(enemyArmy, playerArmy, points);
+
+                    SpecialUnitsCast(playerArmy, enemyArmy);
+
+                    turnSave = turn;
+                    if (brain == "turn = 2")
+                    {
+                        if (playerArmy[0].Hp < playerUnitHp || enemyArmy[0].Hp < enemyUnitHp)
+                            drawPoints = 0;
+                        else
+                            drawPoints++;
+                        turn = Turn(turn);
+                    }
+                    else if (brain == "turn = 1")
                         drawPoints = 0;
                     else
+                    {
+                        turn = Turn(turn);
                         drawPoints++;
-                    turn = Turn(turn);
+                    }
+
+                    ArmysUpdate(playerArmy, enemyArmy);
+                    Console.WriteLine("Your Army: ");
+                    Log.OutArmy(playerArmy); Console.WriteLine();
+                    Console.WriteLine("Enemy Army: ");
+                    Log.OutArmy(enemyArmy); Console.WriteLine();
                 }
-                else if (brain == "turn = 1")
-                    drawPoints = 0;
-                else
+
+                if (battleOption != "4")
                 {
-                    turn = Turn(turn);
-                    drawPoints++;
+                    Console.WriteLine("1. Отменить раунд \n2. Повторить раунд");
+                    battleOption = Console.ReadLine();
+                    if (battleOption == "1")
+                    {
+                        turn = turnSave;
+                        receiver.brain = brain;
+                        invoker.SetCommand(new RoundCancellation());
+                    }
+                    else if (battleOption == "2")
+                    {
+                        receiver.turn = turnSave;
+                        receiver.brain = brain;
+                        invoker.SetCommand(new RoundRepeat());
+                    }
+
+                    if (battleOption == "1" || battleOption == "2")
+                    {
+                        brain = invoker.DoExecute(receiver, playerArmy, enemyArmy);
+                        Console.WriteLine("Your Army: ");
+                        Log.OutArmy(playerArmy); Console.WriteLine();
+                        Console.WriteLine("Enemy Army: ");
+                        Log.OutArmy(enemyArmy); Console.WriteLine();
+                        battleOption = "5";
+                    }
                 }
-                
-                ArmysUpdate(playerArmy, enemyArmy);
-                Console.WriteLine("Your Army: ");
-                Log.OutArmy(playerArmy); Console.WriteLine();
-                Console.WriteLine("Enemy Army: ");
-                Log.OutArmy(enemyArmy); Console.WriteLine();
             }
             return EndBattle(playerArmy, corpesPlayerArmy, enemyArmy, corpesEnemyArmy);
         }
@@ -105,7 +150,7 @@ namespace ArtOfWar
                     secondArmy.RemoveAt(0);
         }
 
-        static void SpecialUnitsCast(List<Unit> firstArmy, List<Unit> secondArmy)
+        public static void SpecialUnitsCast(List<Unit> firstArmy, List<Unit> secondArmy)
         {
             int count;
 
