@@ -128,6 +128,7 @@ namespace ArtOfWar
                     if (battleOption == "1" || battleOption == "2")
                     {
                         brain = invoker.DoExecute(receiver, playerArmy, enemyArmy);
+                        ArmysUpdate(playerArmy, enemyArmy);
                         Console.WriteLine("Your Army: ");
                         Log.OutArmy(playerArmy); Console.WriteLine();
                         Console.WriteLine("Enemy Army: ");
